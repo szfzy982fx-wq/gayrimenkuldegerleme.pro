@@ -3,376 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emlak Yatırım Analizi PRO | Tek Ekran</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <title>AI Vision | No-Token Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #2980b9;
-            --light: #f4f6f7;
-            --green: #27ae60;
-            --red: #c0392b;
-            --orange: #e67e22;
-            --purple: #8e44ad;
-            --error: #e74c3c;
+        :root { --p: #ff0055; --s: #00d2ff; --bg: #050505; }
+        body { background: #0a0a12; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card { background: #111; border: 2px solid var(--p); border-radius: 20px; padding: 30px; width: 420px; text-align: center; box-shadow: 0 0 30px rgba(255, 0, 85, 0.2); }
+        
+        textarea { 
+            width: 100%; height: 90px; background: #000; border: 1px solid #333; 
+            border-radius: 12px; color: white; padding: 12px; margin-bottom: 20px; 
+            resize: none; outline: none; box-sizing: border-box; font-size: 0.9rem;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: var(--primary); border-bottom: 3px solid var(--accent); padding-bottom: 15px; margin-bottom: 25px; font-size: 1.8rem; }
-        
-        .row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;}
-        .col { flex: 1; min-width: 280px; }
-        
-        label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--primary); font-size: 0.95rem; margin-top: 10px; }
-        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1.1rem; box-sizing: border-box; font-family: 'Courier New', Courier, monospace; font-weight: bold; }
-        input:focus { border-color: var(--accent); outline: none; background: #fbfdff; }
-        .hint { font-size: 0.8rem; color: #7f8c8d; margin-top: 2px; }
-        
-        /* Sekme (Tab) Sistemi */
-        .tabs { display: flex; margin-top: 20px; border-bottom: 2px solid #ddd; }
-        .tab-btn { flex: 1; padding: 15px; font-size: 1.1rem; font-weight: bold; background: #ecf0f1; border: none; cursor: pointer; color: #7f8c8d; transition: 0.3s; }
-        .tab-btn:hover { background: #dfe6e9; }
-        .tab-btn.active { background: var(--accent); color: white; border-top-left-radius: 8px; border-top-right-radius: 8px; }
-        .tab-content { display: none; padding: 20px; background: #fff; border: 1px solid #ddd; border-top: none; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
-        .tab-content.active { display: block; }
 
-        /* Esnek Plan Taksit Alanı */
-        .inst-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-        .btn-add { background: #95a5a6; color: white; width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .btn-del { background: var(--error); color: white; border:none; padding: 0 15px; height: 42px; border-radius: 6px; font-size: 1.2rem; cursor: pointer;}
+        .btn { 
+            width: 100%; padding: 15px; border-radius: 10px; border: none; 
+            font-family: 'Orbitron'; font-weight: bold; cursor: pointer; 
+            transition: 0.3s; font-size: 0.8rem;
+        }
+        .btn-gen { background: var(--p); color: white; margin-bottom: 15px; }
+        .btn-save { background: var(--s); color: black; display: none; }
 
-        /* Butonlar */
-        .btn-calc { width: 100%; padding: 15px; background-color: var(--primary); color: white; border: none; border-radius: 6px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.3s; }
-        .btn-calc:hover { background-color: #34495e; }
-        .btn-pdf { background: var(--purple); color: white; width: 100%; padding: 12px; border:none; border-radius:6px; margin-top: 15px; font-size: 1.1rem; font-weight:bold; cursor:pointer; display: none; }
+        #result-box { 
+            margin-top: 20px; min-height: 250px; border: 1px dashed #444; 
+            border-radius: 15px; display: flex; align-items: center; justify-content: center; 
+            overflow: hidden; background: #000;
+        }
+        img { max-width: 100%; border-radius: 10px; display: none; }
         
-        /* Sonuçlar */
-        .error-msg { color: var(--error); font-size: 0.95rem; font-weight: bold; margin-top: 15px; display: none; text-align:center; }
-        .result-box { margin-top: 30px; padding: 25px; border-radius: 10px; background: var(--light); border-left: 5px solid var(--accent); display: none; }
-        .res-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px; font-size: 1.05rem; }
-        .res-row:last-child { border: none; }
-        .highlight { font-size: 1.5rem; font-weight: bold; color: var(--accent); text-align: center; display: block; margin: 15px 0; padding: 10px; background: rgba(41, 128, 185, 0.1); border-radius: 6px; }
-        .verdict { text-align: center; font-weight: bold; padding: 15px; color: white; border-radius: 6px; margin-top: 15px; font-size: 1.2rem; }
-        .v-green { background-color: var(--green); }
-        .v-red { background-color: var(--red); }
-        .info-tag { font-size: 0.85rem; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-left: 10px; }
-        .tag-warn { background: #fef5e7; color: #d35400; border: 1px solid #f5c6cb; }
-        .tag-safe { background: #e8f8f5; color: #27ae60; border: 1px solid #d4efdf; }
-
-        /* Nakit Akış Tablosu */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
-        th { background-color: var(--primary); color: white; text-align: center; }
-        tr:nth-child(even) { background-color: #fff; }
+        .loader { 
+            display: none; border: 4px solid #222; border-top: 4px solid var(--s); 
+            border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .back { margin-top: 25px; color: #444; text-decoration: none; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
-<div class="container" id="reportContainer">
-    <h1>Gayrimenkul Analizi PRO</h1>
+    <div class="card">
+        <h1 style="font-family: 'Orbitron'; color: var(--s); font-size: 1.3rem; margin-bottom: 20px;">AI IMAGE STUDIO</h1>
+        
+        <textarea id="promptInput" placeholder="Hayalini İngilizce yaz... (Örn: Cyberpunk cat in neon city)"></textarea>
+        
+        <button class="btn btn-gen" id="genBtn" onclick="generateImage()">HAYALİNİ ÇİZ</button>
 
-    <div style="background:#fff; border:1px solid #ddd; padding:15px; border-radius:8px;">
-        <h3 style="margin-top:0; color:var(--primary); text-align:center;">Ortak Finansal Veriler</h3>
-        <div class="row">
-            <div class="col">
-                <label>Liste Fiyatı (TL)</label>
-                <input type="text" id="listPrice" onkeyup="fmt(this)" value="6.037.000">
-                <label>Peşinat Tutarı (TL)</label>
-                <input type="text" id="downPayment" onkeyup="fmt(this)" value="3.018.500">
-            </div>
-            <div class="col">
-                <label>Mevduat Faizi (Yıllık Brüt %)</label>
-                <input type="number" id="depositInterest" value="45" step="0.5">
-                <label>Peşin Alım İndirimi (%)</label>
-                <input type="number" id="discount" value="15" step="0.1">
-            </div>
+        <div id="result-box">
+            <div class="loader" id="loader"></div>
+            <img id="outputImg" alt="Yapay Zeka Görseli">
         </div>
+
+        <button id="saveBtn" class="btn btn-save" onclick="downloadImage()">RESMİ BİLGİSAYARA KAYDET</button>
     </div>
 
-    <div class="tabs" data-html2canvas-ignore>
-        <button class="tab-btn active" onclick="switchTab('fixed')">Sabit Taksitli Plan</button>
-        <button class="tab-btn" onclick="switchTab('variable')">Esnek (Değişken) Plan</button>
-    </div>
+    <a href="../index.html" class="back">← LOBİYE DÖN</a>
 
-    <div id="fixed" class="tab-content active">
-        <div class="row">
-            <div class="col">
-                <label>Vade Süresi (Ay)</label>
-                <input type="number" id="fixedMonths" value="60">
-                <label>Aylık Vade Farkı / Kredi Faizi (%)</label>
-                <input type="number" id="loanInterest" value="0" step="0.01">
-            </div>
-            <div class="col">
-                <label>Mevduat Stopaj Kesintisi (%)</label>
-                <input type="number" id="taxRate" value="15" step="1">
-                <div class="hint">Gerçek net faiz için stopajı hesaba katar.</div>
-            </div>
-        </div>
-    </div>
+    <script>
+        function generateImage() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            const genBtn = document.getElementById('genBtn');
+            const loader = document.getElementById('loader');
+            const outputImg = document.getElementById('outputImg');
+            const saveBtn = document.getElementById('saveBtn');
 
-    <div id="variable" class="tab-content">
-        <div class="row">
-            <div class="col">
-                <label>Tahmini Aylık Kira Getirisi (TL)</label>
-                <input type="text" id="monthlyRent" onkeyup="fmt(this)" value="0">
-                <div class="hint">Maliyetten düşülmesini istiyorsanız girin.</div>
-            </div>
-            <div class="col">
-                <label>Toplam Planlanan Vade (Ay)</label>
-                <input type="number" id="varTotalMonths" value="60">
-                <div class="hint">Kira NPV hesabı ve Balon ödeme tespiti için.</div>
-            </div>
-        </div>
-        
-        <label style="border-bottom:1px solid #ddd; padding-bottom:5px;">Özel Taksit Periyotları</label>
-        <div id="instContainer"></div>
-        <button class="btn-add" onclick="addRow()" data-html2canvas-ignore>+ Yeni Dönem Ekle</button>
-    </div>
-
-    <div id="errorMsg" class="error-msg">Lütfen verileri eksiksiz ve mantıklı formatta giriniz. (Örn: Peşinat < Liste Fiyatı)</div>
-    
-    <button class="btn-calc" onclick="calculate()" data-html2canvas-ignore>HESAPLA VE RAPORLA</button>
-
-    <div class="result-box" id="results">
-        <h3 style="text-align:center; margin-top:0; color:var(--primary)" id="reportTitle">Analiz Raporu</h3>
-        
-        <div class="res-row">
-            <span>Toplam Geri Ödeme:</span>
-            <div>
-                <strong id="outTotalPaid">0 ₺</strong>
-                <span id="interestTag" class="info-tag tag-safe"></span>
-            </div>
-        </div>
-        
-        <div class="res-row" id="rowBalloon" style="display:none; background:#fff8f0; padding:10px; border-radius:6px;">
-            <span style="color:#d35400; font-weight:bold;">Vade Sonu Balon Ödeme:</span> 
-            <strong id="outBalloon" style="color:var(--orange)">0 ₺</strong>
-        </div>
-
-        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
-
-        <div class="res-row">
-            <span>İndirimli Peşin Alım Fiyatı:</span>
-            <strong id="outCashPrice" style="color:var(--green)">0 ₺</strong>
-        </div>
-
-        <div class="res-row">
-            <span id="npvLabel">Vadeli Planın Bugünkü Maliyeti (NPV):</span>
-            <strong id="outNPV" style="color:var(--primary)">0 ₺</strong>
-        </div>
-
-        <div class="res-row" id="rowRent" style="display:none; border-top:1px dashed #ccc; padding-top:10px;">
-            <span style="font-weight:bold;">Kira İndirgenmiş Net Maliyet:</span> 
-            <strong id="outNetCost" style="color:var(--red); font-size:1.1rem;">0 ₺</strong>
-        </div>
-
-        <label style="text-align:center; display:block; margin-top:20px;">BAŞABAŞ OLMASI GEREKEN İNDİRİM</label>
-        <span class="highlight" id="outBreakEven">% 0</span>
-
-        <div id="verdictBox" class="verdict"></div>
-        <p style="text-align:center; font-size:0.85rem; color:#666; margin-top:10px;">
-            * NPV, taksitlerin mevduat fırsat maliyeti düşüldükten sonraki reel değeridir.
-        </p>
-
-        <div id="tableContainer" style="margin-top:20px;"></div>
-    </div>
-    
-    <button class="btn-pdf" id="btnPdf" onclick="downloadPDF()" data-html2canvas-ignore>📄 Raporu PDF Olarak İndir</button>
-</div>
-
-<script>
-    // Aktif Mod (Varsayılan: fixed)
-    let currentMode = 'fixed';
-
-    const tr = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 });
-
-    // Sayı Formatlayıcı
-    function fmt(el) {
-        let v = el.value.replace(/\D/g, "");
-        if(!v) { el.value = ""; return; }
-        el.value = v.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    }
-    function getNum(id) {
-        const val = document.getElementById(id) ? document.getElementById(id).value : "0";
-        return parseFloat(val.replace(/\./g, '')) || 0;
-    }
-
-    // Sekme Değiştirici
-    function switchTab(mode) {
-        currentMode = mode;
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        
-        event.target.classList.add('active');
-        document.getElementById(mode).classList.add('active');
-        document.getElementById('results').style.display = 'none';
-        document.getElementById('btnPdf').style.display = 'none';
-    }
-
-    // Esnek Satır Ekleme
-    function addRow(dur=60, amt="66.961") {
-        const div = document.createElement('div');
-        div.className = 'inst-row';
-        div.innerHTML = `
-            <input type="number" class="dur" value="${dur}" placeholder="Ay" style="flex:1">
-            <input type="text" class="amt" value="${amt}" onkeyup="fmt(this)" placeholder="Aylık Tutar (TL)" style="flex:2">
-            <button class="btn-del" onclick="this.parentElement.remove()" data-html2canvas-ignore>×</button>
-        `;
-        document.getElementById('instContainer').appendChild(div);
-    }
-
-    // Ana Hesaplama Fonksiyonu
-    function calculate() {
-        const err = document.getElementById('errorMsg');
-        err.style.display = 'none';
-
-        // Ortak Girdiler
-        const listPrice = getNum('listPrice');
-        const downPayment = getNum('downPayment');
-        const grossDepRate = getNum('depositInterest');
-        const discount = getNum('discount');
-
-        if(listPrice <= 0 || downPayment >= listPrice || downPayment < 0) {
-            err.style.display = 'block';
-            return;
-        }
-
-        const cashPrice = listPrice * (1 - (discount / 100));
-        let npv = downPayment;
-        let grandTotal = downPayment;
-        let balloon = 0;
-        let rentNpv = 0;
-        let tableHTML = "";
-
-        // ----- MOD 1: SABİT TAKSİTLİ HESAP -----
-        if (currentMode === 'fixed') {
-            const months = getNum('fixedMonths');
-            const loanIntRate = getNum('loanInterest') / 100;
-            const taxRate = getNum('taxRate') / 100;
-            
-            if(months <= 0) { err.style.display='block'; return; }
-
-            const netDepRateYearly = grossDepRate * (1 - taxRate);
-            const monthlyDepRate = (netDepRateYearly / 12) / 100;
-            const principal = listPrice - downPayment;
-            
-            let monthlyPayment = 0;
-            if (loanIntRate === 0) { monthlyPayment = principal / months; } 
-            else { monthlyPayment = principal * (loanIntRate * Math.pow(1 + loanIntRate, months)) / (Math.pow(1 + loanIntRate, months) - 1); }
-
-            grandTotal += (monthlyPayment * months);
-
-            tableHTML = `<h4 style="margin-bottom:10px; color:var(--primary);">Amortisman & Nakit Akış Tablosu</h4><table><tr><th>Ay</th><th>Nominal Taksit</th><th>NPV Karşılığı</th></tr>`;
-            for (let i = 1; i <= months; i++) {
-                let disc = monthlyPayment / Math.pow(1 + monthlyDepRate, i);
-                npv += disc;
-                tableHTML += `<tr><td style="text-align:center">${i}</td><td>${tr.format(monthlyPayment)}</td><td>${tr.format(disc)}</td></tr>`;
-            }
-            tableHTML += `</table>`;
-            
-            document.getElementById('rowBalloon').style.display = 'none';
-            document.getElementById('rowRent').style.display = 'none';
-            document.getElementById('tableContainer').innerHTML = tableHTML;
-            document.getElementById('reportTitle').innerText = "Sabit Ödeme Planı Raporu";
-        } 
-        
-        // ----- MOD 2: ESNEK TAKSİTLİ HESAP -----
-        else if (currentMode === 'variable') {
-            const monthlyDepRate = (grossDepRate / 12) / 100; // Esnekte brüt bıraktık, istenirse stopaj eklenebilir.
-            const totalMonths = getNum('varTotalMonths') || 1;
-            const monthlyRent = getNum('monthlyRent');
-            
-            let flow = [];
-            let totalInstPaid = 0;
-            
-            document.querySelectorAll('.inst-row').forEach(row => {
-                const d = parseInt(row.querySelector('.dur').value) || 0;
-                const a = parseFloat(row.querySelector('.amt').value.replace(/\./g, '')) || 0;
-                for(let i=0; i<d; i++) {
-                    if(flow.length < totalMonths) { flow.push(a); totalInstPaid += a; }
-                }
-            });
-
-            grandTotal += totalInstPaid;
-            if (grandTotal < listPrice) { balloon = listPrice - grandTotal; }
-
-            for(let i=0; i<flow.length; i++) {
-                if(flow[i] > 0) npv += flow[i] / Math.pow(1 + monthlyDepRate, i + 1);
-            }
-            if(balloon > 0) { npv += balloon / Math.pow(1 + monthlyDepRate, totalMonths + 1); }
-
-            // Kira İskontosu
-            if(monthlyRent > 0) {
-                for(let i=0; i<totalMonths; i++) { rentNpv += monthlyRent / Math.pow(1 + monthlyDepRate, i + 1); }
-                document.getElementById('rowRent').style.display = 'flex';
-                document.getElementById('outNetCost').innerText = tr.format(npv - rentNpv);
-            } else {
-                document.getElementById('rowRent').style.display = 'none';
+            if (!prompt) {
+                alert("Lütfen bir hayal kur ve yaz Ozan!");
+                return;
             }
 
-            if(balloon > 0) {
-                document.getElementById('rowBalloon').style.display = 'flex';
-                document.getElementById('outBalloon').innerText = tr.format(balloon);
-            } else {
-                document.getElementById('rowBalloon').style.display = 'none';
+            // Durumu güncelle
+            genBtn.disabled = true;
+            genBtn.innerText = "YAPAY ZEKA ÇİZİYOR...";
+            loader.style.display = "block";
+            outputImg.style.display = "none";
+            saveBtn.style.display = "none";
+
+            // Pollinations AI URL - Token istemez, doğrudan link üzerinden çalışır
+            // Ekstra detaylar ekleyerek kaliteyi artırıyoruz
+            const finalPrompt = encodeURIComponent(prompt + " high quality, 4k, neon aesthetic");
+            const imageUrl = `https://image.pollinations.ai/prompt/${finalPrompt}?width=512&height=512&nologo=true`;
+
+            // Resmi önbelleğe alıp yüklenmesini bekleyelim
+            const tempImg = new Image();
+            tempImg.src = imageUrl;
+
+            tempImg.onload = function() {
+                outputImg.src = imageUrl;
+                outputImg.style.display = "block";
+                saveBtn.style.display = "block";
+                loader.style.display = "none";
+                genBtn.disabled = false;
+                genBtn.innerText = "HAYALİNİ ÇİZ";
+            };
+
+            tempImg.onerror = function() {
+                alert("Görsel oluşturulurken bir hata oluştu. Tekrar dene.");
+                loader.style.display = "none";
+                genBtn.disabled = false;
+                genBtn.innerText = "TEKRAR DENE";
+            };
+        }
+
+        async function downloadImage() {
+            const img = document.getElementById('outputImg');
+            try {
+                const response = await fetch(img.src);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'ozan-ai-art.png';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                // Eğer blob hatası verirse doğrudan linki yeni sekmede aç
+                window.open(img.src, '_blank');
             }
-
-            document.getElementById('tableContainer').innerHTML = ""; // Esnekte tablo yok
-            document.getElementById('reportTitle').innerText = "Esnek Ödeme Planı Raporu";
         }
-
-        // ----- ORTAK SONUÇ ÇIKTISI YÖNETİMİ -----
-        const breakEven = (1 - (npv / listPrice)) * 100;
-
-        document.getElementById('outTotalPaid').innerText = tr.format(grandTotal);
-        document.getElementById('outCashPrice').innerText = tr.format(cashPrice);
-        document.getElementById('outNPV').innerText = tr.format(npv);
-        document.getElementById('outBreakEven').innerText = "% " + breakEven.toFixed(2);
-
-        // Vade Farkı Tagı
-        const tag = document.getElementById('interestTag');
-        if(grandTotal > listPrice) {
-            tag.className = "info-tag tag-warn";
-            tag.innerText = "⚠️ Vade Farkı İçeriyor";
-        } else {
-            tag.className = "info-tag tag-safe";
-            tag.innerText = "✅ Sıfır Faiz";
-        }
-
-        // Karar Mekanizması
-        const v = document.getElementById('verdictBox');
-        let effectiveNpv = currentMode === 'variable' && rentNpv > 0 ? (npv - rentNpv) : npv;
-
-        if(cashPrice > effectiveNpv) {
-            v.className = "verdict v-green";
-            v.innerText = "KARAR: VADELİ ALINIZ (Mevduat fırsatı daha kazançlı)";
-        } else {
-            v.className = "verdict v-red";
-            v.innerText = "KARAR: PEŞİN ALINIZ (Nakit indirimi daha yüksek avantaj sağlıyor)";
-        }
-
-        document.getElementById('results').style.display = 'block';
-        document.getElementById('btnPdf').style.display = 'block';
-    }
-
-    // PDF Çıktısı
-    function downloadPDF() {
-        const element = document.getElementById('reportContainer');
-        const opt = {
-            margin:       0.3,
-            filename:     `Yatirim_Raporu_${currentMode}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().set(opt).from(element).save();
-    }
-
-    // Başlangıç Kurulumu
-    window.onload = function() {
-        addRow(60, "66.961"); // Esnek plan için varsayılan ilk satır
-    };
-</script>
-
+    </script>
 </body>
 </html>
+
