@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -74,14 +73,14 @@
         .tag-warn { background: #fef5e7; color: #d35400; border: 1px solid #f5c6cb; }
         .tag-safe { background: #e8f8f5; color: #27ae60; border: 1px solid #d4efdf; }
 
-        /* Nakit Akış Tablosu ve Sayfa Sonu (Page Break) Stilleri */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; }
+        /* Nakit Akış Tablosu */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; background: white; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
         th { background-color: var(--primary); color: white; text-align: center; }
-        tr:nth-child(even) { background-color: #fff; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
         
-        /* Sadece PDF çıktısında sayfayı bölmek için */
-        .pdf-page-break { page-break-before: always; break-before: page; }
+        /* Ana Rapor Konteynerini PDF için Hazırlama */
+        #reportContainer { padding-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -211,9 +210,9 @@
         <p style="text-align:center; font-size:0.85rem; color:#666; margin-top:10px;">
             * NPV, taksitlerin mevduat fırsat maliyeti düşüldükten sonraki reel değeridir.
         </p>
-
-        <div id="tableContainer"></div>
     </div>
+    
+    <div id="tableContainer"></div>
     
     <button class="btn-pdf" id="btnPdf" onclick="downloadPDF()" data-html2canvas-ignore>📄 Raporu PDF Olarak İndir</button>
 </div>
@@ -243,6 +242,7 @@
         event.target.classList.add('active');
         document.getElementById(mode).classList.add('active');
         document.getElementById('results').style.display = 'none';
+        document.getElementById('tableContainer').innerHTML = '';
         document.getElementById('btnPdf').style.display = 'none';
     }
 
@@ -295,18 +295,19 @@
 
             grandTotal += (monthlyPayment * months);
 
-            // PDF KESİLMESİNİ ÖNLEYEN DİV EKLENDİ (class="pdf-page-break")
+            // html2pdf__page-break sınıfı, kütüphanenin "BURADAN SONRASINI YENİ SAYFAYA AT" komutudur.
             tableHTML = `
-                <div class="pdf-page-break"></div>
-                <h4 style="margin-bottom:10px; color:var(--primary); text-align:center; margin-top:30px;">Amortisman & Nakit Akış Tablosu</h4>
-                <table><tr><th>Ay</th><th>Nominal Taksit</th><th>NPV Karşılığı</th></tr>`;
+                <div class="html2pdf__page-break"></div> 
+                <div style="background:var(--light); padding:15px; border-radius:8px; margin-top:20px;">
+                    <h4 style="margin:0 0 15px 0; color:var(--primary); text-align:center;">Amortisman & Nakit Akış Tablosu</h4>
+                    <table><tr><th>Ay</th><th>Nominal Taksit</th><th>NPV Karşılığı</th></tr>`;
                 
             for (let i = 1; i <= months; i++) {
                 let disc = monthlyPayment / Math.pow(1 + monthlyDepRate, i);
                 npv += disc;
                 tableHTML += `<tr><td style="text-align:center">${i}</td><td>${tr.format(monthlyPayment)}</td><td>${tr.format(disc)}</td></tr>`;
             }
-            tableHTML += `</table>`;
+            tableHTML += `</table></div>`;
             
             document.getElementById('rowBalloon').style.display = 'none';
             document.getElementById('rowRent').style.display = 'none';
@@ -387,22 +388,22 @@
         document.getElementById('btnPdf').style.display = 'block';
     }
 
-    // PDF İndirme Ayarları Güncellendi
+    // PDF İndirme Ayarları (Bölünmeleri Önleyecek Şekilde Ayarlandı)
     function downloadPDF() {
         const element = document.getElementById('reportContainer');
         const opt = {
-            margin:       0.4, // PDF kenar boşlukları
+            margin:       [0.4, 0.4, 0.4, 0.4], 
             filename:     `Yatirim_Raporu_${currentMode}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
+            image:        { type: 'jpeg', quality: 1 },
             html2canvas:  { 
                 scale: 2, 
                 useCORS: true, 
-                scrollY: 0, // Sayfayı en üstten yakalar
-                windowWidth: element.scrollWidth // Kutu genişliğine tam uymasını sağlar
+                scrollY: 0,
+                windowWidth: element.scrollWidth
             },
             jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-            // CSS'deki page-break class'larını tanımasını sağlar
-            pagebreak:    { mode: ['css', 'legacy'] } 
+            // avoid ayarı ile kütüphaneye "Şu elemanları asla ortadan bölme" diyoruz.
+            pagebreak:    { mode: ['css', 'legacy'], avoid: ['.res-row', '.verdict', 'tr', 'h3'] } 
         };
         html2pdf().set(opt).from(element).save();
     }
